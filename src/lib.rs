@@ -1,5 +1,5 @@
 use std::fs::File;
-use std::io::{self, BufRead};
+use std::io::{self, BufRead, Lines};
 use std::path::Path;
 use std::error::Error;
 
@@ -17,4 +17,18 @@ where P: AsRef<Path>,
        .map(func)
        .collect::<Result<Vec<_>,_>>()?
     )
+}
+
+pub fn file_lines<P>(filename: P) -> Result<Lines<io::BufReader<File>>, io::Error>
+where P: AsRef<Path> {
+    let file = File::open(filename)?;
+    Ok(io::BufReader::new(file).lines())
+}
+
+pub fn gcd(a: i32, b: i32) -> i32 {
+    if b==0 {
+        a
+    } else {
+        gcd(b, a%b)
+    }
 }
