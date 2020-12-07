@@ -1,10 +1,9 @@
 use std::fs::File;
 use std::io::{self, BufRead, Lines};
 use std::path::Path;
-use std::error::Error;
 
 pub fn parse_file<T, E: 'static, P>
-    (filename: P, func: fn(&String) -> Result<T, E>) -> Result<Vec<T>, Box<dyn Error>>
+    (filename: P, func: fn(&String) -> Result<T, E>) -> Result<Vec<T>, Box<dyn std::error::Error>>
 where P: AsRef<Path>,
       E: std::error::Error, {
 
@@ -30,5 +29,24 @@ pub fn gcd(a: i32, b: i32) -> i32 {
         a
     } else {
         gcd(b, a%b)
+    }
+}
+
+#[derive(Debug)]
+pub enum Error {
+    WrongInt(std::num::ParseIntError),
+    IoError(std::io::Error),
+    MissingRegex,
+}
+
+impl From<std::io::Error> for Error {
+    fn from(e: std::io::Error) -> Self {
+        Error::IoError(e)
+    }
+}
+
+impl From<std::num::ParseIntError> for Error {
+    fn from(e: std::num::ParseIntError) -> Self {
+        Error::WrongInt(e)
     }
 }
