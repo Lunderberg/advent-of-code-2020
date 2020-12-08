@@ -37,6 +37,8 @@ pub enum Error {
     WrongInt(std::num::ParseIntError),
     IoError(std::io::Error),
     MissingRegex,
+    InvalidValue(String),
+    NoneError,
 }
 
 impl From<std::io::Error> for Error {
@@ -50,3 +52,10 @@ impl From<std::num::ParseIntError> for Error {
         Error::WrongInt(e)
     }
 }
+
+// Once the try_trait has been stabilized
+// impl From<core::option::NoneError> for Error {
+//     fn from(e: core::option::NoneError) -> Self {
+//         Error::NoneError
+//     }
+// }
