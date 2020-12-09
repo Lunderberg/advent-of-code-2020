@@ -39,6 +39,7 @@ pub enum Error {
     MissingRegex,
     InvalidValue(String),
     NoneError,
+    EarlyFailure,
 }
 
 impl From<std::io::Error> for Error {
