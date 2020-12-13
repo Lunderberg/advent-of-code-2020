@@ -1,12 +1,11 @@
-use std::fs::read_to_string;
-use std::collections::HashMap;
 use regex::Regex;
+use std::collections::HashMap;
+use std::fs::read_to_string;
 
 #[derive(Debug)]
 struct Passport {
     fields: HashMap<String, String>,
 }
-
 
 #[derive(Debug)]
 enum PassportParseError {
@@ -59,7 +58,12 @@ fn validate_hgt(val: &str) -> bool {
     let reg = Regex::new(r"^(?P<val>[0-9]+)(?P<unit>in|cm)$").unwrap();
     let captures = reg.captures(val);
     if let Some(captures) = captures {
-        let val = captures.name("val").unwrap().as_str().parse::<i32>().unwrap();
+        let val = captures
+            .name("val")
+            .unwrap()
+            .as_str()
+            .parse::<i32>()
+            .unwrap();
         let unit = captures.name("unit").unwrap().as_str();
 
         match unit {
@@ -93,62 +97,54 @@ fn validate_pid(val: &str) -> bool {
 }
 
 impl Passport {
-    fn parse(filename: &str) -> Result<Vec<Passport>,PassportParseError> {
+    fn parse(filename: &str) -> Result<Vec<Passport>, PassportParseError> {
         let contents = read_to_string(filename)?;
         let reg = Regex::new(r"(?P<key>[a-z]+):(?P<val>[a-z0-9#]+)").unwrap();
-        Ok(
-            contents
-                .split("\n\n")
-                .map(|section|
-                     Passport{fields:
-                              reg
-                              .captures_iter(section)
-                              .map(|cap| (cap.name("key").unwrap().as_str().to_string(),
-                                          cap.name("val").unwrap().as_str().to_string()))
-                              .collect::<HashMap<_,_>>(),
-                     }
-                )
-                .collect()
-        )
+        Ok(contents
+            .split("\n\n")
+            .map(|section| Passport {
+                fields: reg
+                    .captures_iter(section)
+                    .map(|cap| {
+                        (
+                            cap.name("key").unwrap().as_str().to_string(),
+                            cap.name("val").unwrap().as_str().to_string(),
+                        )
+                    })
+                    .collect::<HashMap<_, _>>(),
+            })
+            .collect())
     }
 
     fn has_required_fields(&self) -> bool {
-        let required_fields = vec!["byr","iyr","eyr","hgt","hcl","ecl","pid",
-                                   //"cid", // The country ID, missing for North Pole
+        let required_fields = vec![
+            "byr", "iyr", "eyr", "hgt", "hcl", "ecl",
+            "pid",
+            //"cid", // The country ID, missing for North Pole
         ];
-        required_fields
-            .iter()
-            .all(|v| self.fields.contains_key(*v))
+        required_fields.iter().all(|v| self.fields.contains_key(*v))
     }
 
     fn is_valid(&self) -> bool {
-        let required_fields = vec!["byr","iyr","eyr","hgt","hcl","ecl","pid",
-                                   //"cid", // The country ID, missing for North Pole
+        let required_fields = vec![
+            "byr", "iyr", "eyr", "hgt", "hcl", "ecl",
+            "pid",
+            //"cid", // The country ID, missing for North Pole
         ];
         required_fields
             .iter()
-            .all(|v|
-                 self.fields.contains_key(*v) &&
-                 validate_field(v,&self.fields[*v]))
+            .all(|v| self.fields.contains_key(*v) && validate_field(v, &self.fields[*v]))
     }
 }
 
-
-
 fn main() {
-    let args : Vec<String> = std::env::args().collect();
+    let args: Vec<String> = std::env::args().collect();
     let filename = &args[1];
 
     let passports = Passport::parse(filename).unwrap();
-    let num_valid = passports
-        .iter()
-        .filter(|p| p.has_required_fields())
-        .count();
+    let num_valid = passports.iter().filter(|p| p.has_required_fields()).count();
     println!("Part 1, num valid = {}", num_valid);
 
-    let num_valid = passports
-        .iter()
-        .filter(|p| p.is_valid())
-        .count();
+    let num_valid = passports.iter().filter(|p| p.is_valid()).count();
     println!("Part 2, num valid = {}", num_valid);
 }

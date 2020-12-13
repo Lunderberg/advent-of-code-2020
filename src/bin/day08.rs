@@ -3,7 +3,6 @@ use std::convert::From;
 
 use util;
 
-
 #[derive(Debug, Clone)]
 enum Instruction {
     Acc(i32),
@@ -15,7 +14,7 @@ impl std::str::FromStr for Instruction {
     type Err = util::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        let word_iter : Vec<_> = s.split(' ').collect();
+        let word_iter: Vec<_> = s.split(' ').collect();
         let command = word_iter[0];
         let argument = word_iter[1].parse::<i32>()?;
 
@@ -37,7 +36,7 @@ struct VirtualMachine {
 
 impl From<Vec<Instruction>> for VirtualMachine {
     fn from(program: Vec<Instruction>) -> Self {
-        Self{
+        Self {
             program: program,
             ip: 0,
             acc: 0,
@@ -48,9 +47,16 @@ impl From<Vec<Instruction>> for VirtualMachine {
 impl VirtualMachine {
     fn iter(&mut self) {
         match self.program[self.ip as usize] {
-            Instruction::Acc(val) => { self.acc += val; self.ip += 1; },
-            Instruction::Jmp(val) => { self.ip += val; },
-            Instruction::Nop(_) => { self.ip += 1; },
+            Instruction::Acc(val) => {
+                self.acc += val;
+                self.ip += 1;
+            }
+            Instruction::Jmp(val) => {
+                self.ip += val;
+            }
+            Instruction::Nop(_) => {
+                self.ip += 1;
+            }
         }
     }
 
@@ -62,11 +68,11 @@ impl VirtualMachine {
 #[derive(Debug)]
 struct InfiniteLoop;
 
-fn test_swap(mut program : Vec<Instruction>, loc: usize) -> Result<i32, InfiniteLoop> {
+fn test_swap(mut program: Vec<Instruction>, loc: usize) -> Result<i32, InfiniteLoop> {
     match program[loc] {
-        Instruction::Acc(_) => { },
-        Instruction::Jmp(val) => {program[loc] = Instruction::Nop(val)},
-        Instruction::Nop(val) => {program[loc] = Instruction::Jmp(val)},
+        Instruction::Acc(_) => {}
+        Instruction::Jmp(val) => program[loc] = Instruction::Nop(val),
+        Instruction::Nop(val) => program[loc] = Instruction::Jmp(val),
     }
 
     let mut vm = VirtualMachine::from(program);
@@ -86,15 +92,14 @@ fn test_swap(mut program : Vec<Instruction>, loc: usize) -> Result<i32, Infinite
     }
 }
 
-
 fn main() -> Result<(), util::Error> {
-    let args : Vec<String> = std::env::args().collect();
+    let args: Vec<String> = std::env::args().collect();
     let filename = &args[1];
 
-    let program =
-        util::file_lines(filename).unwrap()
+    let program = util::file_lines(filename)
+        .unwrap()
         .map(|line| line?.parse::<Instruction>())
-        .collect::<Result<Vec<_>,_>>()?;
+        .collect::<Result<Vec<_>, _>>()?;
 
     let mut vm = VirtualMachine::from(program.clone());
 
@@ -105,11 +110,10 @@ fn main() -> Result<(), util::Error> {
     }
     println!("First repeated instruction {} with acc = {}", vm.ip, vm.acc);
 
-
     let terminal_values = program
         .iter()
         .enumerate()
-        .map(|(i,_instruction)| test_swap(program.clone(), i))
+        .map(|(i, _instruction)| test_swap(program.clone(), i))
         .filter(|res| res.is_ok())
         .map(|res| res.unwrap())
         .collect::<Vec<_>>();

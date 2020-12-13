@@ -10,45 +10,71 @@ struct BoatState {
 impl BoatState {
     fn apply_command(&self, c: Command) -> BoatState {
         match c {
-            Command::Move(dir, dist) => {
-                match dir {
-                    Direction::North => BoatState{x: self.x,      y: self.y+dist, facing:self.facing},
-                    Direction::South => BoatState{x: self.x,      y: self.y-dist, facing:self.facing},
-                    Direction::East  => BoatState{x: self.x+dist, y: self.y,      facing:self.facing},
-                    Direction::West  => BoatState{x: self.x-dist, y: self.y,      facing:self.facing},
-                }
+            Command::Move(dir, dist) => match dir {
+                Direction::North => BoatState {
+                    x: self.x,
+                    y: self.y + dist,
+                    facing: self.facing,
+                },
+                Direction::South => BoatState {
+                    x: self.x,
+                    y: self.y - dist,
+                    facing: self.facing,
+                },
+                Direction::East => BoatState {
+                    x: self.x + dist,
+                    y: self.y,
+                    facing: self.facing,
+                },
+                Direction::West => BoatState {
+                    x: self.x - dist,
+                    y: self.y,
+                    facing: self.facing,
+                },
             },
 
-            Command::Forward(dist) => self.apply_command( Command::Move(self.facing, dist) ),
+            Command::Forward(dist) => self.apply_command(Command::Move(self.facing, dist)),
 
             Command::RotateLeft => {
                 let new_facing = match self.facing {
                     Direction::North => Direction::West,
-                    Direction::West  => Direction::South,
+                    Direction::West => Direction::South,
                     Direction::South => Direction::East,
-                    Direction::East  => Direction::North,
+                    Direction::East => Direction::North,
                 };
-                BoatState{x: self.x, y: self.y, facing:new_facing}
+                BoatState {
+                    x: self.x,
+                    y: self.y,
+                    facing: new_facing,
+                }
             }
 
             Command::RotateRight => {
                 let new_facing = match self.facing {
                     Direction::North => Direction::East,
-                    Direction::West  => Direction::North,
+                    Direction::West => Direction::North,
                     Direction::South => Direction::West,
-                    Direction::East  => Direction::South,
+                    Direction::East => Direction::South,
                 };
-                BoatState{x: self.x, y: self.y, facing:new_facing}
+                BoatState {
+                    x: self.x,
+                    y: self.y,
+                    facing: new_facing,
+                }
             }
 
             Command::TurnAround => {
                 let new_facing = match self.facing {
                     Direction::North => Direction::South,
-                    Direction::West  => Direction::East,
+                    Direction::West => Direction::East,
                     Direction::South => Direction::North,
-                    Direction::East  => Direction::West,
+                    Direction::East => Direction::West,
                 };
-                BoatState{x: self.x, y: self.y, facing:new_facing}
+                BoatState {
+                    x: self.x,
+                    y: self.y,
+                    facing: new_facing,
+                }
             }
         }
     }
@@ -112,18 +138,24 @@ struct WayPoint {
 impl WayPoint {
     fn apply_command(&mut self, c: Command) {
         match c {
-            Command::Move(dir, dist) => {
-                match dir {
-                    Direction::North => {self.waypoint_y += dist;},
-                    Direction::South => {self.waypoint_y -= dist;},
-                    Direction::East  => {self.waypoint_x += dist;},
-                    Direction::West  => {self.waypoint_x -= dist;},
+            Command::Move(dir, dist) => match dir {
+                Direction::North => {
+                    self.waypoint_y += dist;
                 }
-            }
+                Direction::South => {
+                    self.waypoint_y -= dist;
+                }
+                Direction::East => {
+                    self.waypoint_x += dist;
+                }
+                Direction::West => {
+                    self.waypoint_x -= dist;
+                }
+            },
 
             Command::Forward(num) => {
-                self.boat_x += num*self.waypoint_x;
-                self.boat_y += num*self.waypoint_y;
+                self.boat_x += num * self.waypoint_x;
+                self.boat_y += num * self.waypoint_y;
             }
 
             Command::RotateLeft => {
@@ -147,39 +179,47 @@ impl WayPoint {
     }
 }
 
-
-
 fn main() -> Result<(), util::Error> {
-    let args : Vec<String> = std::env::args().collect();
+    let args: Vec<String> = std::env::args().collect();
     let filename = &args[1];
 
     let commands = std::fs::read_to_string(filename)?
         .lines()
         .filter(|line| line.len() > 0)
         .map(|line| line.parse::<Command>())
-        .collect::<Result<Vec<_>,_>>()?;
+        .collect::<Result<Vec<_>, _>>()?;
 
-    let initial = BoatState{x: 0, y: 0, facing: Direction::East};
+    let initial = BoatState {
+        x: 0,
+        y: 0,
+        facing: Direction::East,
+    };
 
     println!("Initial = {:?}", initial);
     let final_pos = commands
         .iter()
         .fold(initial, |boat, command| boat.apply_command(*command));
 
-    println!("Part a, pos = ({}, {}), Manhattan={}",
-             final_pos.x, final_pos.y,
-             final_pos.x.abs() + final_pos.y.abs());
+    println!(
+        "Part a, pos = ({}, {}), Manhattan={}",
+        final_pos.x,
+        final_pos.y,
+        final_pos.x.abs() + final_pos.y.abs()
+    );
 
-    let mut waypoint = WayPoint{
-        waypoint_x: 10, waypoint_y: 1,
-        boat_x: 0, boat_y: 0};
-    commands
-        .iter()
-        .for_each(|c| waypoint.apply_command(*c));
-    println!("Part b, pos = ({}, {}), Manhattan={}",
-             waypoint.boat_x, waypoint.boat_y,
-             waypoint.boat_x.abs() + waypoint.boat_y.abs());
-
+    let mut waypoint = WayPoint {
+        waypoint_x: 10,
+        waypoint_y: 1,
+        boat_x: 0,
+        boat_y: 0,
+    };
+    commands.iter().for_each(|c| waypoint.apply_command(*c));
+    println!(
+        "Part b, pos = ({}, {}), Manhattan={}",
+        waypoint.boat_x,
+        waypoint.boat_y,
+        waypoint.boat_x.abs() + waypoint.boat_y.abs()
+    );
 
     Ok(())
 }

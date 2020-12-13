@@ -5,8 +5,8 @@ use itertools::Itertools;
 use util;
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let args : Vec<String> = std::env::args().collect();
-    let filename = &args[args.len()-1];
+    let args: Vec<String> = std::env::args().collect();
+    let filename = &args[args.len() - 1];
 
     let values = util::parse_file(filename, |line| line.parse::<i32>())?;
 
@@ -14,10 +14,9 @@ fn main() -> Result<(), Box<dyn Error>> {
         values
             .iter()
             .combinations(num_elements)
-            .filter(|c| c.iter().map(|x| *x).sum::<i32>()==2020)
-            .map(|c| println!("{:?}, prod={}", c, c.iter().map(|x| *x).product::<i32>()) )
-            .last()
-            ;
+            .filter(|c| c.iter().map(|x| *x).sum::<i32>() == 2020)
+            .map(|c| println!("{:?}, prod={}", c, c.iter().map(|x| *x).product::<i32>()))
+            .last();
     }
 
     Ok(())
