@@ -1,8 +1,6 @@
 use std::collections::HashSet;
 use std::convert::From;
 
-use util;
-
 #[derive(Debug, Clone)]
 enum Instruction {
     Acc(i32),
@@ -37,7 +35,7 @@ struct VirtualMachine {
 impl From<Vec<Instruction>> for VirtualMachine {
     fn from(program: Vec<Instruction>) -> Self {
         Self {
-            program: program,
+            program,
             ip: 0,
             acc: 0,
         }
@@ -68,7 +66,10 @@ impl VirtualMachine {
 #[derive(Debug)]
 struct InfiniteLoop;
 
-fn test_swap(mut program: Vec<Instruction>, loc: usize) -> Result<i32, InfiniteLoop> {
+fn test_swap(
+    mut program: Vec<Instruction>,
+    loc: usize,
+) -> Result<i32, InfiniteLoop> {
     match program[loc] {
         Instruction::Acc(_) => {}
         Instruction::Jmp(val) => program[loc] = Instruction::Nop(val),

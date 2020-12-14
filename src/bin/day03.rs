@@ -1,5 +1,3 @@
-use util;
-
 #[derive(Debug)]
 struct TreeField {
     locations: Vec<(i32, i32)>,
@@ -40,10 +38,7 @@ impl TreeField {
                 .for_each(|(x, _c)| locations.push((x as i32, y as i32)));
         }
 
-        Ok(TreeField {
-            locations: locations,
-            width: width,
-        })
+        Ok(TreeField { locations, width })
     }
 
     fn num_trees_hit(&self, dx: i32, dy: i32) -> usize {
@@ -70,7 +65,8 @@ fn main() {
     let tree_field = TreeField::parse(filename).unwrap();
     println!("Part 1, trees hit: {}", tree_field.num_trees_hit(3, 1));
 
-    let directions: Vec<(i32, i32)> = vec![(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)];
+    let directions: Vec<(i32, i32)> =
+        vec![(1, 1), (3, 1), (5, 1), (7, 1), (1, 2)];
 
     let prod: usize = directions
         .iter()

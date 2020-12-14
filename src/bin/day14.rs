@@ -1,8 +1,6 @@
 use itertools::Itertools;
 use std::collections::HashMap;
 
-use util;
-
 #[derive(Debug, Copy, Clone)]
 struct Mask {
     mask_0: u64,
@@ -35,9 +33,9 @@ impl std::str::FromStr for Command {
                 .fold(0u64, |acc, c| 2 * acc + ((c == 'X') as u64));
 
             Ok(Command::Mask(Mask {
-                mask_0: mask_0,
-                mask_1: mask_1,
-                mask_x: mask_x,
+                mask_0,
+                mask_1,
+                mask_x,
             }))
         } else if s.starts_with("mem") {
             let components: Vec<_> =
@@ -45,10 +43,7 @@ impl std::str::FromStr for Command {
             let location = components[1].parse::<u64>()?;
             let value = components[4].parse::<u64>()?;
 
-            Ok(Command::Memset {
-                location: location,
-                value: value,
-            })
+            Ok(Command::Memset { location, value })
         } else {
             Err(util::Error::InvalidValue(s.to_owned()))
         }

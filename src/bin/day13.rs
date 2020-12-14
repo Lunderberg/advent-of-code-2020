@@ -1,6 +1,4 @@
-use util;
-
-fn part_1(lines: &Vec<String>) -> Result<(), util::Error> {
+fn part_1(lines: &[String]) -> Result<(), util::Error> {
     let start_time = lines[0].parse::<i64>()?;
     let bus_times = lines[1]
         .split(',')
@@ -9,7 +7,8 @@ fn part_1(lines: &Vec<String>) -> Result<(), util::Error> {
         .collect::<Result<Vec<_>, _>>()?;
 
     let next_arrival_time = |period: i64| {
-        let num_periods_passed = ((start_time as f64) / (period as f64)).ceil() as i64;
+        let num_periods_passed =
+            ((start_time as f64) / (period as f64)).ceil() as i64;
         period * num_periods_passed
     };
 
@@ -29,7 +28,7 @@ fn part_1(lines: &Vec<String>) -> Result<(), util::Error> {
     Ok(())
 }
 
-fn part_2(lines: &Vec<String>) -> Result<(), util::Error> {
+fn part_2(lines: &[String]) -> Result<(), util::Error> {
     let bus_offsets: Vec<_> = lines[1]
         .split(',')
         .enumerate()
@@ -37,23 +36,24 @@ fn part_2(lines: &Vec<String>) -> Result<(), util::Error> {
         .map(|(i, s)| (i as i64, s.parse::<i64>().unwrap()))
         .collect();
 
-    let required_offset =
-        bus_offsets
-            .iter()
-            .fold((0, 1), |(prev_offset, prev_period), (offset, period)| {
-                let offset = *offset;
-                let period = *period;
+    let required_offset = bus_offsets.iter().fold(
+        (0, 1),
+        |(prev_offset, prev_period), (offset, period)| {
+            let offset = *offset;
+            let period = *period;
 
-                let additional_cycles = (0..period)
-                    .filter(|p| (prev_offset + p * prev_period + offset) % period == 0)
-                    .next()
-                    .unwrap();
+            let additional_cycles = (0..period)
+                .find(|p| {
+                    (prev_offset + p * prev_period + offset) % period == 0
+                })
+                .unwrap();
 
-                (
-                    additional_cycles * prev_period + prev_offset,
-                    period * prev_period,
-                )
-            });
+            (
+                additional_cycles * prev_period + prev_offset,
+                period * prev_period,
+            )
+        },
+    );
 
     println!("Part b, moderate force = {}", required_offset.0);
 
@@ -61,7 +61,7 @@ fn part_2(lines: &Vec<String>) -> Result<(), util::Error> {
 }
 
 #[allow(dead_code)]
-fn part_2_brute_force(lines: &Vec<String>) -> Result<(), util::Error> {
+fn part_2_brute_force(lines: &[String]) -> Result<(), util::Error> {
     let bus_offsets: Vec<_> = lines[1]
         .split(',')
         .enumerate()
@@ -70,12 +70,11 @@ fn part_2_brute_force(lines: &Vec<String>) -> Result<(), util::Error> {
         .collect();
 
     let first_time = (1..)
-        .filter(|x| {
+        .find(|x| {
             bus_offsets
                 .iter()
                 .all(|(offset, period)| (x + offset) % period == 0)
         })
-        .next()
         .unwrap();
 
     println!("Part b, brute force = {}", first_time);

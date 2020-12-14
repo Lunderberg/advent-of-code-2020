@@ -1,5 +1,3 @@
-use util;
-
 #[derive(Debug)]
 struct BoardingPass {
     seat_id: u32,

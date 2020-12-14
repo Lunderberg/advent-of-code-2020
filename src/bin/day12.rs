@@ -1,5 +1,3 @@
-use util;
-
 #[derive(Debug)]
 struct BoatState {
     x: i32,
@@ -33,7 +31,9 @@ impl BoatState {
                 },
             },
 
-            Command::Forward(dist) => self.apply_command(Command::Move(self.facing, dist)),
+            Command::Forward(dist) => {
+                self.apply_command(Command::Move(self.facing, dist))
+            }
 
             Command::RotateLeft => {
                 let new_facing = match self.facing {
@@ -185,7 +185,7 @@ fn main() -> Result<(), util::Error> {
 
     let commands = std::fs::read_to_string(filename)?
         .lines()
-        .filter(|line| line.len() > 0)
+        .filter(|line| !line.is_empty())
         .map(|line| line.parse::<Command>())
         .collect::<Result<Vec<_>, _>>()?;
 

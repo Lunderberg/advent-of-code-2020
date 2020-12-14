@@ -3,8 +3,6 @@ use std::convert::From;
 
 use regex::Regex;
 
-use util;
-
 #[derive(Debug, PartialEq, Eq, Hash, Clone)]
 struct BagType {
     color: String,
@@ -29,7 +27,8 @@ impl std::str::FromStr for BagRule {
             .as_str()
             .to_owned();
 
-        let regex = Regex::new(r"(?P<num>[0-9]+) (?P<color>[a-z ]+?) bag").unwrap();
+        let regex =
+            Regex::new(r"(?P<num>[0-9]+) (?P<color>[a-z ]+?) bag").unwrap();
         let contents = regex
             .captures_iter(s)
             .map(|cap| {
@@ -46,7 +45,7 @@ impl std::str::FromStr for BagRule {
             container: BagType {
                 color: container_color,
             },
-            contents: contents,
+            contents,
         })
     }
 }
@@ -84,8 +83,8 @@ impl From<Vec<BagRule>> for BagGraph {
             .collect::<HashMap<_, _>>();
 
         BagGraph {
-            contains: contains,
-            is_contained_by: is_contained_by,
+            contains,
+            is_contained_by,
         }
     }
 }
@@ -97,7 +96,7 @@ impl BagGraph {
 
         unchecked.push(base);
 
-        while unchecked.len() > 0 {
+        while !unchecked.is_empty() {
             let color = unchecked.pop().unwrap();
 
             let new_colors = self.is_contained_by.get(&color);
@@ -117,7 +116,9 @@ impl BagGraph {
             None => 0,
             Some(contents) => contents
                 .iter()
-                .map(|(num, inner_bag)| num * (self.num_contained(inner_bag) + 1))
+                .map(|(num, inner_bag)| {
+                    num * (self.num_contained(inner_bag) + 1)
+                })
                 .sum(),
         }
     }

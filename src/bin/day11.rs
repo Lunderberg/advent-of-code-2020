@@ -1,5 +1,3 @@
-use util;
-
 #[derive(Debug, Copy, Clone, PartialEq)]
 enum CellState {
     OccupiedChair,
@@ -19,7 +17,9 @@ impl Ferry {
         let coordinates = std::fs::read_to_string(filename)?
             .lines()
             .enumerate()
-            .flat_map(|(y, line)| line.chars().enumerate().map(move |(x, c)| (x, y, c)))
+            .flat_map(|(y, line)| {
+                line.chars().enumerate().map(move |(x, c)| (x, y, c))
+            })
             .collect::<Vec<_>>();
 
         let width = coordinates.iter().map(|(x, _y, _c)| x).max().unwrap() + 1;
@@ -37,15 +37,18 @@ impl Ferry {
 
         Ok(Self {
             states: cell_contents,
-            height: height,
-            width: width,
+            height,
+            width,
         })
     }
 }
 
 impl Ferry {
     fn in_bounds(&self, x: i32, y: i32) -> bool {
-        (x >= 0) && (x < self.width as i32) && (y >= 0) && (y < self.height as i32)
+        (x >= 0)
+            && (x < self.width as i32)
+            && (y >= 0)
+            && (y < self.height as i32)
     }
 
     fn as_xy(&self, loc: usize) -> (i32, i32) {
@@ -79,11 +82,20 @@ impl Ferry {
             (-1, -1),
         ]
         .iter()
-        .map(|(dx, dy)| (self.get_value(x + dx, y + dy) == CellState::OccupiedChair) as usize)
+        .map(|(dx, dy)| {
+            (self.get_value(x + dx, y + dy) == CellState::OccupiedChair)
+                as usize
+        })
         .sum()
     }
 
-    fn get_visible_value(&self, mut x: i32, mut y: i32, dx: i32, dy: i32) -> CellState {
+    fn get_visible_value(
+        &self,
+        mut x: i32,
+        mut y: i32,
+        dx: i32,
+        dy: i32,
+    ) -> CellState {
         while self.in_bounds(x, y) {
             x += dx;
             y += dy;
@@ -110,7 +122,8 @@ impl Ferry {
         ]
         .iter()
         .map(|(dx, dy)| {
-            (self.get_visible_value(x, y, *dx, *dy) == CellState::OccupiedChair) as usize
+            (self.get_visible_value(x, y, *dx, *dy) == CellState::OccupiedChair)
+                as usize
         })
         .sum()
     }
@@ -174,7 +187,7 @@ impl Ferry {
         Ferry {
             height: self.height,
             width: self.width,
-            states: states,
+            states,
         }
     }
 
@@ -189,7 +202,7 @@ impl Ferry {
         Ferry {
             height: self.height,
             width: self.width,
-            states: states,
+            states,
         }
     }
 
@@ -217,7 +230,7 @@ impl std::fmt::Display for Ferry {
                     .iter()
                     .map(|c| write!(fmt, "{}", c))
                     .collect::<Result<Vec<_>, _>>()?;
-                write!(fmt, "\n")?;
+                writeln!(fmt)?;
                 Ok(())
             })
             .collect::<Result<Vec<_>, _>>()?;

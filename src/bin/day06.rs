@@ -17,7 +17,7 @@ impl std::str::FromStr for CustomsForm {
             let index = ((c as u32) - ('a' as u32)) as usize;
             answers[index] = true;
         });
-        Ok(CustomsForm { answers: answers })
+        Ok(CustomsForm { answers })
     }
 }
 
@@ -32,8 +32,8 @@ impl std::str::FromStr for CustomsGroup {
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(CustomsGroup {
             forms: s
-                .split("\n")
-                .filter(|line| line.len() > 0)
+                .split('\n')
+                .filter(|line| !line.is_empty())
                 .map(|line| line.parse::<CustomsForm>())
                 .collect::<Result<Vec<_>, _>>()?,
         })

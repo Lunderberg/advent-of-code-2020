@@ -20,7 +20,9 @@ where
         .collect::<Result<Vec<_>, _>>()?)
 }
 
-pub fn file_lines<P>(filename: P) -> Result<Lines<io::BufReader<File>>, io::Error>
+pub fn file_lines<P>(
+    filename: P,
+) -> Result<Lines<io::BufReader<File>>, io::Error>
 where
     P: AsRef<Path>,
 {

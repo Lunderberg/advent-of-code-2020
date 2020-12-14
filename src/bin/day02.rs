@@ -2,8 +2,6 @@ use std::error::Error;
 
 use regex::Regex;
 
-use util;
-
 #[derive(Debug)]
 struct Password {
     lower_bound: i32,
@@ -62,13 +60,14 @@ impl std::str::FromStr for Password {
         let password = captures
             .name("password")
             .ok_or(PasswordParseError)?
-            .as_str();
+            .as_str()
+            .to_string();
 
         Ok(Password {
-            lower_bound: lower_bound,
-            upper_bound: upper_bound,
-            check_letter: check_letter,
-            password: password.to_string(),
+            lower_bound,
+            upper_bound,
+            check_letter,
+            password,
         })
     }
 }

@@ -131,9 +131,9 @@ impl Passport {
             "pid",
             //"cid", // The country ID, missing for North Pole
         ];
-        required_fields
-            .iter()
-            .all(|v| self.fields.contains_key(*v) && validate_field(v, &self.fields[*v]))
+        required_fields.iter().all(|v| {
+            self.fields.contains_key(*v) && validate_field(v, &self.fields[*v])
+        })
     }
 }
 
@@ -142,7 +142,8 @@ fn main() {
     let filename = &args[1];
 
     let passports = Passport::parse(filename).unwrap();
-    let num_valid = passports.iter().filter(|p| p.has_required_fields()).count();
+    let num_valid =
+        passports.iter().filter(|p| p.has_required_fields()).count();
     println!("Part 1, num valid = {}", num_valid);
 
     let num_valid = passports.iter().filter(|p| p.is_valid()).count();

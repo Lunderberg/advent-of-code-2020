@@ -2,8 +2,6 @@ use std::error::Error;
 
 use itertools::Itertools;
 
-use util;
-
 fn main() -> Result<(), Box<dyn Error>> {
     let args: Vec<String> = std::env::args().collect();
     let filename = &args[args.len() - 1];
@@ -14,8 +12,10 @@ fn main() -> Result<(), Box<dyn Error>> {
         values
             .iter()
             .combinations(num_elements)
-            .filter(|c| c.iter().map(|x| *x).sum::<i32>() == 2020)
-            .map(|c| println!("{:?}, prod={}", c, c.iter().map(|x| *x).product::<i32>()))
+            .filter(|c| c.iter().copied().sum::<i32>() == 2020)
+            .map(|c| {
+                println!("{:?}, prod={}", c, c.iter().copied().product::<i32>())
+            })
             .last();
     }
 
