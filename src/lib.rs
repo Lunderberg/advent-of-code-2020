@@ -46,6 +46,8 @@ pub enum Error {
     InvalidValue(String),
     NoneError,
     EarlyFailure,
+    UnknownChar(char),
+    ParseError,
 }
 
 impl From<std::io::Error> for Error {
