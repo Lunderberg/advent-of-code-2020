@@ -54,53 +54,47 @@ impl MatchRules {
         MatchRules { rules }
     }
 
-    fn num_chars_matched(
-        &self,
-        i: usize,
-        s: &str,
-        is_at_end: bool,
-    ) -> Result<usize, util::Error> {
+    fn num_chars_matched(&self, i: usize, s: &str) -> Vec<usize> {
         let rule = &self.rules[&i];
 
         match rule {
             MatchRule::SingleChar(c) => {
-                if (s.chars().next() == Some(*c))
-                    && ((s.len() == 1) || (!is_at_end))
-                {
-                    Ok(1)
+                if s.chars().next() == Some(*c) {
+                    vec![1]
                 } else {
-                    Err(util::Error::Mismatch)
+                    Vec::new()
                 }
             }
             MatchRule::MatchOthers(options) => options
                 .iter()
                 .map(|subrules| {
-                    subrules
-                        .iter()
-                        .enumerate()
-                        .fold::<Result<_, util::Error>, _>(
-                            Ok(0usize),
-                            |acc, (i, subrule)| {
-                                let prev_chars = acc?;
-                                let is_last_rule = i + 1 == subrules.len();
-                                let additional_chars = self.num_chars_matched(
-                                    *subrule,
-                                    &s[prev_chars..],
-                                    is_at_end && is_last_rule,
-                                )?;
-                                Ok(prev_chars + additional_chars)
-                            },
-                        )
+                    subrules.iter().fold::<Vec<usize>, _>(
+                        vec![0],
+                        |acc, subrule| {
+                            acc.iter()
+                                .map(|prev_chars| {
+                                    self.num_chars_matched(
+                                        *subrule,
+                                        &s[*prev_chars..],
+                                    )
+                                    .iter()
+                                    .map(|new_chars| prev_chars + new_chars)
+                                    .collect::<Vec<usize>>()
+                                })
+                                .flatten()
+                                .collect()
+                        },
+                    )
                 })
-                .filter(|res| res.is_ok())
-                .map(|res| res.unwrap())
-                .next()
-                .ok_or(util::Error::Mismatch),
+                .flatten()
+                .collect(),
         }
     }
 
     fn matches(&self, i: usize, s: &str) -> bool {
-        self.num_chars_matched(i, s, true).is_ok()
+        self.num_chars_matched(i, s)
+            .iter()
+            .any(|&num_chars| num_chars == s.len())
     }
 }
 
@@ -132,13 +126,6 @@ fn main() -> Result<(), util::Error> {
     let mut sections = text.split("\n\n");
     let rules =
         MatchRules::parse(sections.next().ok_or(util::Error::NoneError)?);
-
-    // let example = "babbbbaabbbbbabbbbbbaabaaabaaa";
-    // println!(
-    //     "example = {}, matches = {}",
-    //     example,
-    //     rules.matches(0, example),
-    // );
 
     let num_matches = messages
         .iter()
