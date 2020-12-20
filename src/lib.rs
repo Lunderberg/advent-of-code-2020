@@ -48,6 +48,7 @@ pub enum Error {
     EarlyFailure,
     UnknownChar(char),
     ParseError,
+    Mismatch,
 }
 
 impl From<std::io::Error> for Error {
