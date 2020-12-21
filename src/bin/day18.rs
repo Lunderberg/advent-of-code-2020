@@ -32,11 +32,7 @@ impl Iterator for Tokenizer<'_> {
         }
 
         // Pull next character, bailing out if end of string.
-        let c = self.characters.next();
-        if c.is_none() {
-            return None;
-        }
-        let c = c.unwrap();
+        let c = self.characters.next()?;
 
         match c {
             '(' => Some(Token::LeftParen),

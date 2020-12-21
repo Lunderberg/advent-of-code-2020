@@ -16,7 +16,7 @@ impl std::str::FromStr for Recipe {
         let ingredients: HashSet<_> = sections
             .next()
             .ok_or(util::Error::NoneError)?
-            .split(" ")
+            .split(' ')
             .map(|s| s.to_owned())
             .collect();
 

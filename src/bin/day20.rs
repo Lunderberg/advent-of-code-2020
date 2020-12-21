@@ -14,13 +14,13 @@ struct Tile {
 
 impl Display for Tile {
     fn fmt(&self, fmt: &mut Formatter<'_>) -> Result<(), std::fmt::Error> {
-        write!(fmt, "Tile: {}\n", self.num)?;
+        writeln!(fmt, "Tile: {}", self.num)?;
         for row in 0..self.height {
             let row_str = self.values[self.width * row..self.width * (row + 1)]
                 .iter()
                 .map(|&bit| if bit { '#' } else { '.' })
                 .collect::<String>();
-            write!(fmt, "{}\n", row_str)?;
+            writeln!(fmt, "{}", row_str)?;
         }
         Ok(())
     }
@@ -276,7 +276,7 @@ struct TileLocation {
     tile_num: i64,
 }
 
-fn tile_layout(tiles: &Vec<Tile>) -> Vec<TileLocation> {
+fn tile_layout(tiles: &[Tile]) -> Vec<TileLocation> {
     let mut tiles_remaining: Vec<_> = tiles.iter().collect();
 
     let mut placement = Vec::new();
@@ -364,7 +364,7 @@ fn tile_layout(tiles: &Vec<Tile>) -> Vec<TileLocation> {
 }
 
 #[allow(dead_code)]
-fn print_layout(placement: &Vec<TileLocation>) {
+fn print_layout(placement: &[TileLocation]) {
     let xmin = placement.iter().map(|p| p.x).min().unwrap();
     let xmax = placement.iter().map(|p| p.x).max().unwrap();
     let ymin = placement.iter().map(|p| p.y).min().unwrap();
@@ -376,16 +376,16 @@ fn print_layout(placement: &Vec<TileLocation>) {
                 .iter()
                 .find(|p| (p.x == x) && (p.y == y))
                 .map(|p| p.tile_num.to_string())
-                .or(Some("    ".to_string()))
+                .or_else(|| Some("    ".to_string()))
                 .unwrap();
             print!(" ({}) ", s);
         }
-        print!("\n");
+        println!();
     }
 }
 
 #[allow(dead_code)]
-fn print_tiles(tiles: &Vec<Tile>, placement: &Vec<TileLocation>) {
+fn print_tiles(tiles: &[Tile], placement: &[TileLocation]) {
     let xmin = placement.iter().map(|p| p.x).min().unwrap();
     let xmax = placement.iter().map(|p| p.x).max().unwrap();
     let ymin = placement.iter().map(|p| p.y).min().unwrap();
@@ -406,7 +406,7 @@ fn print_tiles(tiles: &Vec<Tile>, placement: &Vec<TileLocation>) {
                     .map(|&bit| if bit { '#' } else { '.' })
                     .collect::<String>()
             })
-            .or(Some("          ".to_string()))
+            .or_else(|| Some("          ".to_string()))
             .unwrap()
     };
     let tile_str = |x, y| {
@@ -414,7 +414,7 @@ fn print_tiles(tiles: &Vec<Tile>, placement: &Vec<TileLocation>) {
             .iter()
             .find(|p| (p.x == x) && (p.y == y))
             .map(|p| format!("-{}- {} ", p.tile_num, p.transform))
-            .or(Some("             ".to_string()))
+            .or_else(|| Some("             ".to_string()))
             .unwrap()
     };
 
@@ -424,19 +424,19 @@ fn print_tiles(tiles: &Vec<Tile>, placement: &Vec<TileLocation>) {
         for x in xmin..=xmax {
             print!("{}", tile_str(x, y));
         }
-        print!("\n");
+        println!();
 
         for row in 0..num_rows {
             for x in xmin..=xmax {
                 print!("{}   ", row_str(x, y, row));
             }
-            print!("\n");
+            println!();
         }
-        print!("\n\n");
+        println!("\n");
     }
 }
 
-fn merge_images(tiles: &Vec<Tile>, placement: &Vec<TileLocation>) -> Tile {
+fn merge_images(tiles: &[Tile], placement: &[TileLocation]) -> Tile {
     let xmin = placement.iter().map(|p| p.x).min().unwrap();
     let xmax = placement.iter().map(|p| p.x).max().unwrap();
     let ymin = placement.iter().map(|p| p.y).min().unwrap();
@@ -470,7 +470,7 @@ fn merge_images(tiles: &Vec<Tile>, placement: &Vec<TileLocation>) -> Tile {
             tile.values[row * tile_width + 1..(row + 1) * tile_width - 1].iter()
         })
         .flatten()
-        .map(|x| *x)
+        .copied()
         .collect();
 
     Tile {

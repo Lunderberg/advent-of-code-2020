@@ -106,7 +106,7 @@ fn main() -> Result<(), util::Error> {
     rule_map.iter().for_each(|(rule, index)| {
         rule_possibilities
             .entry(rule.to_string())
-            .or_insert_with(|| HashSet::new())
+            .or_insert_with(HashSet::new)
             .insert(*index);
     });
 

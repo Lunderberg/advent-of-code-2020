@@ -10,14 +10,14 @@ impl std::str::FromStr for MatchRule {
     type Err = util::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
-        if s.chars().nth(0).unwrap() == '"' {
+        if s.starts_with('"') {
             Ok(MatchRule::SingleChar(s.chars().nth(1).unwrap()))
         } else {
             Ok(MatchRule::MatchOthers(
                 s.split(" | ")
                     .map(|subrule| {
                         subrule
-                            .split(" ")
+                            .split(' ')
                             .map(|n| n.parse::<usize>())
                             .collect::<Result<Vec<_>, _>>()
                     })
@@ -59,7 +59,7 @@ impl MatchRules {
 
         match rule {
             MatchRule::SingleChar(c) => {
-                if s.chars().next() == Some(*c) {
+                if s.starts_with(*c) {
                     vec![1]
                 } else {
                     Vec::new()

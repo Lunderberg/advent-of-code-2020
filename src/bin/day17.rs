@@ -30,8 +30,7 @@ where
             .filter(|pos| {
                 let num_neighbors = self.count_active_neighbors(&pos);
                 let is_active = self.active.contains(&pos);
-                (is_active && ((num_neighbors == 2) || (num_neighbors == 3)))
-                    || (!is_active && (num_neighbors == 3))
+                (is_active && (num_neighbors == 2)) || (num_neighbors == 3)
             })
             .collect();
 
