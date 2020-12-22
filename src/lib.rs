@@ -49,6 +49,8 @@ pub enum Error {
     UnknownChar(char),
     ParseError,
     Mismatch,
+    GameFinished,
+    GameNotFinished,
 }
 
 impl From<std::io::Error> for Error {
