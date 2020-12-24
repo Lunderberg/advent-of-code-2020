@@ -1,69 +1,77 @@
-use std::collections::VecDeque;
+use std::collections::HashMap;
 
-use indicatif::ProgressBar;
+#[allow(unused_imports)]
+use indicatif::{ProgressBar, ProgressStyle};
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 struct Cups {
-    cups: VecDeque<usize>,
-    active_cup_index: usize,
-}
-
-impl std::str::FromStr for Cups {
-    type Err = util::Error;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        Ok(Cups {
-            cups: s
-                .trim()
-                .chars()
-                .map(|c| c.to_string().parse::<usize>())
-                .collect::<Result<VecDeque<_>, _>>()?,
-            active_cup_index: 0,
-        })
-    }
+    next_cup: HashMap<i64, i64>,
+    active_cup: i64,
 }
 
 impl Cups {
-    fn extend(&mut self, max_val: usize) {
-        while self.cups.len() < max_val {
-            self.cups.push_back(self.cups.len() + 1);
+    fn new(s: &str, min_size: i64) -> Result<Self, util::Error> {
+        let cup_order = s
+            .trim()
+            .chars()
+            .map(|c| c.to_string().parse::<i64>())
+            .collect::<Result<Vec<_>, _>>()?;
+
+        let mut next_cup: HashMap<i64, i64> = HashMap::new();
+
+        cup_order[..].windows(2).for_each(|slice| {
+            next_cup.insert(slice[0], slice[1]);
+        });
+
+        let mut prev_cup = cup_order[cup_order.len() - 1];
+
+        while (next_cup.len() as i64) < min_size - 1 {
+            let new_val = (next_cup.len() as i64) + 2;
+            next_cup.insert(prev_cup, new_val);
+            prev_cup = new_val;
         }
+
+        next_cup.insert(prev_cup, cup_order[0]);
+
+        Ok(Self {
+            next_cup,
+            active_cup: cup_order[0],
+        })
+    }
+
+    fn iter(&mut self) {
+        let pick_up: Vec<_> = (0..3)
+            .scan(self.active_cup, |acc, _| {
+                *acc = self.next_cup[acc];
+                Some(*acc)
+            })
+            .collect();
+
+        let mut destination = self.active_cup;
+        loop {
+            destination -= 1;
+            if destination == 0 {
+                destination = self.next_cup.len() as i64;
+            }
+            if !pick_up.contains(&destination) {
+                break;
+            }
+        }
+
+        let after_destination = self.next_cup[&destination];
+        let after_pick_up = self.next_cup[&pick_up[pick_up.len() - 1]];
+        self.next_cup.insert(destination, pick_up[0]);
+        self.next_cup
+            .insert(pick_up[pick_up.len() - 1], after_destination);
+        self.next_cup.insert(self.active_cup, after_pick_up);
+
+        self.active_cup = self.next_cup[&self.active_cup];
     }
 
     fn next_iter(&self) -> Self {
-        let num_cups = self.cups.len();
-        let max_cup_value = self.cups.iter().max().unwrap();
-        let active_cup_value = self.cups[self.active_cup_index];
-
-        let mut new_cups = self.cups.clone();
-        new_cups.rotate_left((self.active_cup_index + 1) % new_cups.len());
-
-        let pick_up: VecDeque<_> =
-            (0..3).map(|_| new_cups.pop_front().unwrap()).collect();
-
-        let destination = new_cups
-            .iter()
-            .filter(|c| **c != active_cup_value)
-            .min_by_key(|c| {
-                (max_cup_value + active_cup_value - *c) % max_cup_value
-            })
-            .copied()
-            .unwrap();
-
-        let destination_index =
-            new_cups.iter().position(|c| *c == destination).unwrap();
-        new_cups.rotate_left((destination_index + 1) % new_cups.len());
-
-        pick_up.iter().for_each(|c| new_cups.push_back(*c));
-
-        new_cups.rotate_right(
-            (self.active_cup_index + destination_index + 5) % new_cups.len(),
-        );
-
-        Self {
-            cups: new_cups,
-            active_cup_index: (self.active_cup_index + 1) % num_cups,
-        }
+        let mut next = self.clone();
+        next.iter();
+        next
     }
 }
 
@@ -72,29 +80,41 @@ fn main() -> Result<(), util::Error> {
     let filename = &args[1];
 
     let text = std::fs::read_to_string(filename)?;
-    let mut cups = text.parse::<Cups>()?;
+    let mut cups = Cups::new(&text, 0)?;
+
+    println!("cups = {:?}", cups);
 
     for _ in 0..100 {
-        cups = cups.next_iter();
+        cups.iter();
     }
 
-    println!("Part 1, cups = {:?}", cups);
+    println!(
+        "Part 1, cups = {:?}",
+        (1..10)
+            .scan(1, |acc, _| {
+                *acc = cups.next_cup[acc];
+                Some(*acc)
+            })
+            .collect::<Vec<_>>()
+    );
 
-    let mut cups = text.parse::<Cups>()?;
-    cups.extend(1000000);
+    let mut cups = Cups::new(&text, 1000000)?;
 
     let bar = ProgressBar::new(10000000);
+    bar.set_style(
+        ProgressStyle::default_bar().template(
+            "{wide_bar} Elapsed: {elapsed_precise}, ETA: {eta_precise}",
+        ),
+    );
     for _ in 0..10000000 {
         bar.inc(1);
-        cups = cups.next_iter()
+        cups.iter();
     }
     bar.finish();
 
-    let pos_1 = cups.cups.iter().position(|c| *c == 1).unwrap();
-    println!(
-        "Part 2, prod = {}",
-        cups.cups[pos_1 + 1] * cups.cups[pos_1 + 2]
-    );
+    let after_1 = cups.next_cup[&1];
+    let after_2 = cups.next_cup[&after_1];
+    println!("Part 2, prod = {}", after_1 * after_2);
 
     Ok(())
 }
