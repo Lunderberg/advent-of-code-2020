@@ -67,12 +67,6 @@ impl Cups {
 
         self.active_cup = self.next_cup[&self.active_cup];
     }
-
-    fn next_iter(&self) -> Self {
-        let mut next = self.clone();
-        next.iter();
-        next
-    }
 }
 
 fn main() -> Result<(), util::Error> {
